@@ -9,19 +9,11 @@ import {
 import { AspectRatio } from "@/components/ui/aspect-ratio"; // Using AspectRatio for placeholder
 import { Car } from "lucide-react"; // Example icon for placeholder
 import Link from "next/link";
-
-// Define the expected structure of the vehicle prop, including the manufacturer
-interface VehicleWithManufacturer {
-  id: number;
-  modelName: string;
-  modelYear: string;
-  manufacturer: {
-    manuName: string;
-  };
-}
+import { VehicleComplete } from "@/types";
+import Image from "next/image";
 
 interface VehicleCardProps {
-  vehicle: VehicleWithManufacturer;
+  vehicle: VehicleComplete;
 }
 
 export default function VehicleCard({ vehicle }: VehicleCardProps) {
@@ -30,7 +22,7 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
       href={`/vehicles/${vehicle.id}`}
       className="block hover:shadow-lg transition-shadow duration-200 rounded-lg"
     >
-      <Card className="w-full max-w-sm overflow-hidden">
+      <Card className="w-full max-w-sm overflow-hidden ">
         {" "}
         {/* Added overflow-hidden */}
         <CardHeader className="p-0">
@@ -40,12 +32,16 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
           <AspectRatio ratio={16 / 9} className="bg-muted">
             {/* You can replace this with an <Image> component later */}
             <div className="flex h-full w-full items-center justify-center">
-              <Car className="h-16 w-16 text-gray-400" />{" "}
-              {/* Placeholder Icon */}
+              <Image
+                src={vehicle.image ?? ""}
+                alt={vehicle.modelName}
+                width={400}
+                height={225}
+              />
             </div>
           </AspectRatio>
         </CardHeader>
-        <CardContent className="p-4">
+        <CardContent className="px-4 py-1">
           {" "}
           {/* Add padding back for content */}
           <CardTitle className="text-lg">{vehicle.modelName}</CardTitle>
@@ -54,8 +50,9 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
           </CardDescription>
         </CardContent>
         {/* Optional Footer - you can add buttons or links here later */}
-        <CardFooter>
-          <p>Card Footer</p>
+        <CardFooter className="flex text-xs pb-6 text-muted-foreground border-t border-muted-foreground items-center justify-between">
+          <p>{vehicle.class}</p>
+          <p>{vehicle.bodyStyle}</p>
         </CardFooter>
       </Card>
     </Link>

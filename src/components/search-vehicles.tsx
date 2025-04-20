@@ -7,19 +7,31 @@ import { Button } from "@/components/ui/button";
 import { Search, Loader2 } from "lucide-react";
 import VehicleCard from "@/components/vehicle-card";
 import { searchVehiclesAction } from "@/app/search/actions"; // Import the Server Action
-import type { VehicleWithManufacturerName } from "@/types";
+import type { VehicleComplete } from "@/types";
 import { useDebouncedCallback } from "use-debounce";
 
 export default function SearchVehicles() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<VehicleWithManufacturerName[]>([]);
+  const [results, setResults] = useState<VehicleComplete[]>([]);
   const [isSearching, startTransition] = useTransition(); // For pending state
 
   // Debounced function to call the server action
   const debouncedSearch = useDebouncedCallback((searchTerm: string) => {
     startTransition(async () => {
       const searchResults = await searchVehiclesAction(searchTerm);
-      setResults(searchResults);
+      const transformedResults = searchResults.map((vehicle) => ({
+        ...vehicle,
+        manufacturer: {
+          id: 0, // Replace with actual data if available
+          manuName: vehicle.manufacturer.manuName,
+          manuCountry: "", // Replace with actual data if available
+          logo: null, // Replace with actual data if available
+          founder: null, // Replace with actual data if available
+          headquarters: null, // Replace with actual data if available
+          subBrands: [], // Replace with actual data if available
+        },
+      }));
+      setResults(transformedResults);
     });
   }, 500); // Debounce for 500ms
 

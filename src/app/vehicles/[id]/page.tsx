@@ -1,3 +1,4 @@
+// src/app/vehicles/[id]/page.tsx
 import {
   Card,
   CardHeader,
@@ -6,9 +7,18 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import prisma from "@/lib/prisma";
-import { AspectRatio } from "@radix-ui/react-aspect-ratio";
-import { Car, CalendarDays, Factory, Globe } from "lucide-react";
+import { AspectRatio } from "@/components/ui/aspect-ratio"; // Keep for fallback
+import {
+  Car,
+  CalendarDays,
+  Factory,
+  Globe,
+  Tag, // Icon for Class/Body Style
+  Info, // Icon for Production/Model Years
+} from "lucide-react";
 import { notFound } from "next/navigation";
+import Image from "next/image"; // Import Next.js Image
+import type { VehicleComplete } from "@/types"; // Import the correct type
 
 interface VehiclePageProps {
   params: {
@@ -16,8 +26,8 @@ interface VehiclePageProps {
   };
 }
 
-// Function to fetch a single vehicle by ID
-async function getVehicleById(id: number) {
+// Function to fetch a single vehicle by ID (already fetches needed data)
+async function getVehicleById(id: number): Promise<VehicleComplete | null> {
   try {
     const vehicle = await prisma.vehicle.findUnique({
       where: { id: id },
@@ -30,6 +40,26 @@ async function getVehicleById(id: number) {
     console.error("Failed to fetch vehicle:", error);
     return null; // Return null on error
   }
+}
+
+// Helper component for displaying detail items conditionally
+function DetailItem({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value?: string | null;
+}) {
+  if (!value) return null; // Don't render if value is missing
+  return (
+    <p className="flex items-start sm:items-center">
+      <Icon className="h-5 w-5 mr-3 text-primary flex-shrink-0 mt-1 sm:mt-0" />
+      <span className="font-medium text-foreground mr-2">{label}:</span>
+      <span className="text-muted-foreground">{value}</span>
+    </p>
+  );
 }
 
 // The Page component itself (Server Component)
@@ -55,14 +85,26 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
 
         <Card className="overflow-hidden">
           <CardHeader className="p-0 relative">
-            {/* Placeholder Image */}
+            {/* Display Actual Image or Placeholder */}
             <AspectRatio ratio={16 / 9} className="bg-muted">
-              <div className="flex h-full w-full items-center justify-center">
-                <Car className="h-24 w-24 text-gray-400" />
-              </div>
+              {vehicle.image ? (
+                <Image
+                  src={vehicle.image}
+                  alt={`Image of ${vehicle.modelName}`}
+                  fill // Use fill to cover the AspectRatio container
+                  className="object-cover" // Ensure image covers the area
+                  priority // Prioritize loading the main image
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Help optimize image loading
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <Car className="h-24 w-24 text-gray-400" />{" "}
+                  {/* Fallback Icon */}
+                </div>
+              )}
             </AspectRatio>
             {/* Overlay Title */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/70 to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 to-transparent">
               <CardTitle className="text-3xl font-bold text-white">
                 {vehicle.modelName}
               </CardTitle>
@@ -71,27 +113,39 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
               </CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             {/* Details Section */}
             <div>
               <h2 className="text-xl font-semibold mb-4 border-b pb-2">
-                Details
+                Vehicle Details
               </h2>
-              <div className="space-y-3 text-muted-foreground">
-                <p className="flex items-center">
-                  <Car className="h-5 w-5 mr-3 text-primary" />
-                  <span className="font-medium text-foreground mr-2">
-                    Model:
-                  </span>{" "}
-                  {vehicle.modelName}
-                </p>
-                <p className="flex items-center">
-                  <CalendarDays className="h-5 w-5 mr-3 text-primary" />
-                  <span className="font-medium text-foreground mr-2">
-                    Year:
-                  </span>{" "}
-                  {vehicle.modelYear}
-                </p>
+              <div className="space-y-3">
+                <DetailItem
+                  icon={Car}
+                  label="Model"
+                  value={vehicle.modelName}
+                />
+                <DetailItem
+                  icon={CalendarDays}
+                  label="Year"
+                  value={vehicle.modelYear}
+                />
+                <DetailItem icon={Tag} label="Class" value={vehicle.class} />
+                <DetailItem
+                  icon={Tag}
+                  label="Body Style"
+                  value={vehicle.bodyStyle}
+                />
+                <DetailItem
+                  icon={Info}
+                  label="Production"
+                  value={vehicle.productionYears}
+                />
+                <DetailItem
+                  icon={Info}
+                  label="Model Years"
+                  value={vehicle.modelYears}
+                />
               </div>
             </div>
 
@@ -100,25 +154,22 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
               <h2 className="text-xl font-semibold mb-4 border-b pb-2">
                 Manufacturer
               </h2>
-              <div className="space-y-3 text-muted-foreground">
-                <p className="flex items-center">
-                  <Factory className="h-5 w-5 mr-3 text-primary" />
-                  <span className="font-medium text-foreground mr-2">
-                    Name:
-                  </span>{" "}
-                  {vehicle.manufacturer.manuName}
-                </p>
-                <p className="flex items-center">
-                  <Globe className="h-5 w-5 mr-3 text-primary" />
-                  <span className="font-medium text-foreground mr-2">
-                    Country:
-                  </span>{" "}
-                  {vehicle.manufacturer.manuCountry}
-                </p>
+              <div className="space-y-3">
+                <DetailItem
+                  icon={Factory}
+                  label="Name"
+                  value={vehicle.manufacturer.manuName}
+                />
+                <DetailItem
+                  icon={Globe}
+                  label="Country"
+                  value={vehicle.manufacturer.manuCountry}
+                />
+                {/* You can add more manufacturer details here if needed */}
+                {/* <DetailItem icon={User} label="Founder" value={vehicle.manufacturer.founder} /> */}
+                {/* <DetailItem icon={MapPin} label="Headquarters" value={vehicle.manufacturer.headquarters} /> */}
               </div>
             </div>
-
-            {/* Add more sections as needed (e.g., specifications, description) */}
           </CardContent>
         </Card>
       </div>
@@ -126,13 +177,21 @@ export default async function VehiclePage({ params }: VehiclePageProps) {
   );
 }
 
-// Optional: Generate Metadata dynamically
+// Optional: Generate Metadata dynamically (already includes relevant info)
 export async function generateMetadata({ params }: VehiclePageProps) {
   const vehicleId = parseInt(params.id, 10);
   if (isNaN(vehicleId)) {
     return { title: "Vehicle Not Found" };
   }
-  const vehicle = await getVehicleById(vehicleId);
+  // Fetch only necessary data for metadata
+  const vehicle = await prisma.vehicle.findUnique({
+    where: { id: vehicleId },
+    select: {
+      modelName: true,
+      modelYear: true,
+      manufacturer: { select: { manuName: true } },
+    },
+  });
 
   if (!vehicle) {
     return { title: "Vehicle Not Found" };

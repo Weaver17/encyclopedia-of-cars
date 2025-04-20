@@ -1,7 +1,7 @@
 // src/app/vehicles/page.tsx
 import prisma from "@/lib/prisma";
 import VehicleList from "@/components/vehicle-list"; // Import the new Client Component
-import type { VehicleWithManufacturerName } from "@/types";
+import type { VehicleComplete } from "@/types";
 
 // Function to fetch all vehicles (initial sort doesn't strictly matter here anymore,
 // but keeping it might be slightly better for initial paint)
@@ -11,7 +11,13 @@ async function getVehicles() {
       include: {
         manufacturer: {
           select: {
+            id: true,
             manuName: true,
+            manuCountry: true,
+            logo: true,
+            founder: true,
+            headquarters: true,
+            subBrands: true,
           },
         },
       },
@@ -32,7 +38,7 @@ async function getVehicles() {
 // The Page component remains a Server Component
 export default async function VehiclesPage() {
   // Fetch initial data on the server
-  const initialVehicles: VehicleWithManufacturerName[] = await getVehicles();
+  const initialVehicles: VehicleComplete[] = await getVehicles();
 
   return (
     <main className="container mx-auto px-4 py-8">

@@ -1,5 +1,5 @@
 import VehicleCard from "@/components/vehicle-card";
-import { VehicleWithManufacturerName } from "@/types";
+import { VehicleComplete } from "@/types";
 import prisma from "@/lib/prisma";
 
 async function getVehicles() {
@@ -10,7 +10,13 @@ async function getVehicles() {
           // Include the related manufacturer data
           select: {
             // Only select the fields you need from manufacturer
+            id: true,
             manuName: true,
+            manuCountry: true,
+            logo: true,
+            founder: true,
+            headquarters: true,
+            subBrands: true,
           },
         },
       },
@@ -44,7 +50,7 @@ export default async function HomePage() {
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {vehicles.map((vehicle: VehicleWithManufacturerName) => (
+          {vehicles.map((vehicle: VehicleComplete) => (
             <VehicleCard key={vehicle.id} vehicle={vehicle} />
           ))}
         </div>

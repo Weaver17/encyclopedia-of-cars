@@ -10,12 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import VehicleCard from "@/components/vehicle-card";
-import type { VehicleWithManufacturerName } from "@/types";
+import type { VehicleComplete } from "@/types";
 
 type SortOption = "year_desc" | "make_asc" | "model_asc";
 
 interface VehicleListProps {
-  initialVehicles: VehicleWithManufacturerName[];
+  initialVehicles: VehicleComplete[];
 }
 
 export default function VehicleList({ initialVehicles }: VehicleListProps) {
