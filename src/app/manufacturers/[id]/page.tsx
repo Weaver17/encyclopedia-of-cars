@@ -2,15 +2,10 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import Image from "next/image";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Factory, Globe, Car, CalendarDays } from "lucide-react"; // Import necessary icons
+import { Globe, Car, CalendarDays, User, MapPin } from "lucide-react"; // Import necessary icons
 import type { ManufacturerWithVehicles } from "@/types"; // Import the specific type
 
 // Define the props type, including the dynamic 'id' parameter
@@ -71,24 +66,48 @@ export default async function ManufacturerPage({
         <Card className="mb-8 overflow-hidden">
           <CardHeader className="flex flex-col md:flex-row items-start gap-6 p-6">
             {/* Placeholder Logo */}
-            <div className="w-full md:w-1/4 lg:w-1/5 flex-shrink-0">
-              <AspectRatio ratio={1 / 1} className="bg-muted rounded-md">
-                <div className="flex h-full w-full items-center justify-center">
-                  <Factory className="h-20 w-20 text-gray-400" />
-                </div>
+            <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0">
+              <AspectRatio ratio={16 / 9} className="bg-muted rounded-md">
+                <Image
+                  className="p-2 w-full h-full object-contain"
+                  src={manufacturer.logo ?? ""}
+                  alt={manufacturer.manuName}
+                  fill
+                  priority
+                />
               </AspectRatio>
             </div>
             {/* Info */}
-            <div className="flex-grow">
-              <CardTitle className="text-3xl font-bold mb-2">
-                {manufacturer.manuName}
-              </CardTitle>
-              <div className="space-y-2 text-muted-foreground">
-                <p className="flex items-center text-lg">
-                  <Globe className="h-5 w-5 mr-2 text-primary" />
-                  {manufacturer.manuCountry}
-                </p>
+            <div className="flex flex-col flex-grow sm:flex-row sm:w-full sm:justify-between">
+              <div className="flex flex-col">
+                <CardTitle className="text-3xl font-bold mb-2">
+                  {manufacturer.manuName}
+                </CardTitle>
+                <div className="mb-2 text-muted-foreground">
+                  <p className="flex items-center text-lg">
+                    <Globe className="h-5 w-5 mr-2 text-primary" />
+                    {manufacturer.manuCountry}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2 text-muted-foreground sm:mt-auto">
                 {/* Add more manufacturer details here if needed */}
+                <p className="flex items-center text-lg">
+                  <User className="h-5 w-5 mr-2 text-primary" />
+                  {manufacturer.founder}
+                </p>
+                <p className="flex items-center text-lg">
+                  <MapPin className="h-5 w-5 mr-2 text-primary" />
+                  {manufacturer.headquarters}
+                </p>
+                <p className="flex text-lg">
+                  <Car className="h-5 w-5 mt-1 mr-2 text-primary" />
+                  <ul className="flex flex-col">
+                    {manufacturer.subBrands.map((brand) => (
+                      <li key={brand}>{brand}</li>
+                    ))}
+                  </ul>
+                </p>
               </div>
             </div>
           </CardHeader>
@@ -111,16 +130,13 @@ export default async function ManufacturerPage({
                 href={`/vehicles/${vehicle.id}`}
                 className="block"
               >
-                <Card className="hover:shadow-md transition-shadow duration-150 h-full">
+                <Card className="py-4 duration-150 h-full hover:shadow-md transition-shadow">
                   <CardHeader>
+                    {}
                     <CardTitle className="text-xl">
                       {vehicle.modelName}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground flex items-center">
-                    <CalendarDays className="h-4 w-4 mr-2" />{" "}
-                    {vehicle.modelYear}
-                  </CardContent>
                 </Card>
               </Link>
             ))}
